@@ -5,3 +5,8 @@ Version: 0.0.1
 Encoding: UTF-8
 URL: https://github.com/solaclara/LearningR
 BugReports: https://github.com/solaclara/LearningR/issues
+Depends: 
+    tidyverse
+Imports: 
+    readr,
+    snakecase
