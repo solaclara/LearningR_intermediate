@@ -32,26 +32,51 @@ here("data-raw/nurses-stress/stress/5C/5C_1586886626/HR.csv.gz") %>%
 here("data-raw/nurses-stress/stress/5C/5C_1586886712/HR.csv.gz") %>%
   read_csv(
     show_col_types = FALSE,
-    name_repair = to_snake_case)
+    name_repair = to_snake_case
+  )
 ```
 ```{r}
 here("data-raw/nurses-stress/stress/5C/5C_1586886712/HR.csv.gz") %>%
   read_csv(
     show_col_types = FALSE,
     name_repair = to_snake_case,
-    n_max = 100)
+    n_max = 100
+  )
 ```
+
+
 ```{r}
 here("data-raw/nurses-stress/stress/6B/6B_1587569373/EDA.csv.gz") %>%
   read_csv(
     show_col_types = FALSE,
-    name_repair = to_snake_case)
+    name_repair = to_snake_case
+  )
 ```
 
 ```{r}
 here("data-raw/nurses-stress/stress/6B/6B_1587569373/EDA.csv.gz") %>%
   read_csv(
     show_col_types = FALSE,
-    name_repair = to_snake_case, 
-    n_max = 100)
+    name_repair = to_snake_case,
+    n_max = 100
+  )
+```
+
+## Create function
+
+Add values: 
+
+```{r}
+#' Add two numbers together
+#'
+#' @param num1 a number here
+#' @param num2 a number here
+#'
+#' @returns Returns the sum of 2 numbers
+#'
+#'
+add_numbers <- function(num1, num2) {
+  added <- num1 + num2
+  return(added)
+}
 ```
