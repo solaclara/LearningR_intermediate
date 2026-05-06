@@ -53,3 +53,27 @@ get_participant_id <- function(data){
     .before = file_path_id) %>% 
     dplyr::select(-file_path_id)
   return(data_with_id)}
+
+#' Summarizing data
+#'
+#' @param data 
+#'
+#' @returns
+
+summarise_by_datetime <- function (data) {
+  summarised_data <- data %>% 
+    dplyr::mutate(
+      collection_datetime = lubridate::round_date(
+        collection_datetime,
+        unit = "minute"
+      )
+    ) %>%
+    dplyr::summarise(
+      dplyr::across(tidyselect::where(is.numeric), base::list(mean = mean, sd = sd, median = median)),
+      .by = c(id, collection_datetime))
+  return(summarised_data)
+  
+}
+
+
+
