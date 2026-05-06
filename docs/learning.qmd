@@ -112,19 +112,20 @@ here("data-raw/nurses-stress/stress/5C/5C_1586886712/HR.csv.gz") %>%
 
 #' Read all data
 #'
-#' @param filename 
+#' @param filename
 #'
 #' @returns readall
-#' 
+#'
 #'
 read_all <- function(filename) {
- files <- here("data-raw/nurses-stress/") %>%
-  fs::dir_ls(regexp = "HR.csv.gz", recurse = TRUE)
- 
- data <- files %>%
- purrr::map(read) %>%
-  purrr::list_rbind(names_to = "file_path_id")
- return(data)}
+  files <- here("data-raw/nurses-stress/") %>%
+    fs::dir_ls(regexp = "HR.csv.gz", recurse = TRUE)
+
+  data <- files %>%
+    purrr::map(read) %>%
+    purrr::list_rbind(names_to = "file_path_id")
+  return(data)
+}
 
 read_all("HR.csv.gz")
 ```
@@ -135,42 +136,39 @@ read_all("HR.csv.gz")
 hr_data <- read_all("HR.csv.gz")
 
 survey_data <- here("data-raw/nurses-stress/survey-results.csv.gz") |>
-   read ()
+  read()
 hr_data
 survey_data
-
-
 ```
 
 
 ```{r}
 #| eval: false
 #| include: false
-hr_data %>% 
+hr_data %>%
   mutate(
-    id= str_extract(
+    id = str_extract(
       `file_path_id`,
       pattern = "/stress/[:alnum:]{2}/"
-      
-    ) %>% 
-      str_remove("/stress/") %>% 
+    ) %>%
+      str_remove("/stress/") %>%
       str_remove("/"),
-    .before = `file_path_id`)
-
+    .before = `file_path_id`
+  )
 ```
 ```{r}
 #| eval: false
 #| include: false
-hr_data %>% 
+hr_data %>%
   mutate(
-    id= str_extract(
+    id = str_extract(
       `file_path_id)`,
       pattern = "/stress/[:alnum:]{2}/"
-      
-    ) %>% 
-      str_remove("/stress/") %>% 
+    ) %>%
+      str_remove("/stress/") %>%
       str_remove("/"),
-    .before = `file_path_id)`) %>% 
+    .before = `file_path_id)`
+  ) %>%
   select(-`file_path_id)`)
 ```
 
@@ -181,24 +179,74 @@ hr_data %>%
 #| include: false
 #' Get participant id
 #'
-#' @param ID 
+#' @param ID
 #'
 #' @returns ID
 #' @export
 #'
 #' @examples
-get_participant_id <- function(data){
- data_with_id <- data
-  dplyr::mutate(
-    id= stringr::str_extract(
-      file_path_id,
-      "/stress/[:alnum:]{2}/")%>% 
-      stringr::str_remove("/stress/") %>% 
-      stringr::str_remove("/"),
-    .before = file_paht_id %>% 
-  dplyr::select(-file_path_id)
-return(data_with_id)}
+get_participant_id <- function(data) {
+  data_with_id <- data %>%
+    dplyr::mutate(
+      id = stringr::str_extract(
+        file_path_id,
+        "/stress/[:alnum:]{2}/"
+      ) %>%
+        stringr::str_remove("/stress/") %>%
+        stringr::str_remove("/"),
+      .before = file_path_id
+    ) %>%
+    dplyr::select(-file_path_id)
+  return(data_with_id)
+}
+```
+
+## Working with across: 
+
+```{r}
+hr_data <- read_all("HR.csv.gz") %>%
+  get_participant_id()
+```
+```{r}
+hr_data %>%
+  summarise(across(hr, mean))
+```
+
+```{r}
+hr_data %>%
+  summarise(across(hr, list(
+    mean = mean,
+    median = median, sd = sd
+  )))
+```
+```{r}
+hr_data %>%
+  summarise(across(where(is.numeric), list(
+    mean = mean,
+    median = median, sd = sd
+  )))
+```
+##Working with dates: 
+
+
+```{r}
+hr_data %>%
+  mutate(datetime = round_date(collection_datetime, unit = "minute"), .before = collection_datetime)
 ```
 
 
+## Summarising by groups: 
 
+```{r}
+hr_data %>%
+  mutate(
+    collection_datetime = round_date(
+      collection_datetime,
+      unit = "minute"
+    )
+  ) %>%
+  summarise(
+    across(where(is.numeric), list(mean = mean, sd = sd, median = median)),
+    .by = c(id, collection_datetime)
+  )
+```
