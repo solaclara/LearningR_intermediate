@@ -17,3 +17,39 @@ read <- function(file_path, max_rows = 100) {
     )
   return(data)
 }
+
+#' Read all data
+#'
+#' @param filename 
+#'
+#' @returns readall
+#' 
+#'
+read_all <- function(filename) {
+  files <- here("data-raw/nurses-stress/") %>%
+    fs::dir_ls(regexp = "HR.csv.gz", recurse = TRUE)
+  
+  data <- files %>%
+    purrr::map(read) %>%
+    purrr::list_rbind(names_to = "file_path_id")
+  return(data)}
+
+#' Get participant id
+#'
+#' @param ID 
+#'
+#' @returns ID
+#' @export
+#'
+#' @examples
+get_participant_id <- function(data){
+  data_with_id <- data %>% 
+  dplyr::mutate(
+    id= stringr::str_extract(
+      file_path_id,
+      "/stress/[:alnum:]{2}/")%>% 
+      stringr::str_remove("/stress/") %>% 
+      stringr::str_remove("/"),
+    .before = file_path_id) %>% 
+    dplyr::select(-file_path_id)
+  return(data_with_id)}

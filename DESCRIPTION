@@ -8,5 +8,7 @@ BugReports: https://github.com/solaclara/LearningR/issues
 Depends: 
     tidyverse
 Imports: 
+    fs,
+    purrr,
     readr,
     snakecase
