@@ -95,3 +95,19 @@ tidy_survey_dates <- function(data) {
     dplyr::select(-c(date, start_time, end_time, duration))
   return(tidied)}
 
+#' Pivot longer
+#'
+#' @param data 
+#'
+#' @returns Pivot longer
+
+survey_to_long <- function(data) {
+  longer <- data %>%
+    dplyr::select(id, datetime_id, start_datetime, end_datetime) %>%
+    tidyr::pivot_longer(c(start_datetime, end_datetime), names_to = NULL, values_to = "collection_datetime") %>%
+    dplyr::group_by(pick(-collection_datetime)) %>%
+    tidyr::complete(collection_datetime = seq(min(collection_datetime), max(collection_datetime), by = 60)) %>%
+    dplyr::ungroup()
+  return(longer)
+}
+
