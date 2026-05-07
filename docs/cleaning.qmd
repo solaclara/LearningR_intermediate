@@ -25,7 +25,7 @@ hr_data <- read_all("HR.csv.gz") %>%
   summarise_by_datetime()
 
 
-
+```
 ```{r}
 hr_data <- read_all("HR.csv.gz") %>%
   get_participant_id() %>% 
@@ -92,5 +92,10 @@ nurses_stress %>%
   view()
 
 
+```
+##Saving document: 
+
+```{r}
+write.csv(nurses_stress,here("data/nurses-stress.csv"))
 ```
 
