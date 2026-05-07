@@ -75,5 +75,23 @@ summarise_by_datetime <- function (data) {
   
 }
 
-
+#' Tidy data
+#'
+#' @param Tidy data 
+#'
+#' @returns Clean data 
+#' 
+#'
+#'
+tidy_survey_dates <- function(data) {
+  tidied<- data %>% 
+    dplyr::mutate(
+      date = lubridate::mdy(date),
+      start_datetime = lubridate::as_datetime(paste(date, start_time)),
+      end_datetime = lubridate::as_datetime(paste(date, end_time)),
+      datetime_id = start_datetime,
+      .before = start_time
+    ) |>
+    dplyr::select(-c(date, start_time, end_time, duration))
+  return(tidied)}
 
