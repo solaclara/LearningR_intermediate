@@ -25,11 +25,6 @@ hr_data <- read_all("HR.csv.gz") %>%
   summarise_by_datetime()
 
 
-```{r}
-ibi_data <- read_all("IBI.csv.gz")%>%
-  get_participant_id() %>% 
-  summarise_by_datetime()
-```
 
 ```{r}
 hr_data <- read_all("HR.csv.gz") %>%
@@ -37,6 +32,12 @@ hr_data <- read_all("HR.csv.gz") %>%
   summarise_by_datetime()
 ```
 
+
+```{r}
+hr_data <- read_all("HR.csv.gz") %>%
+  get_participant_id() %>% 
+  summarise_by_datetime()
+```
 ```{r}
 ibi_data <- read_all("IBI.csv.gz") %>%
   get_participant_id() %>% 
@@ -76,5 +77,20 @@ survey_tidy <-here::here("data-raw/nurses-stress/survey-results.csv.gz") %>%
 survey_long <- survey_tidy %>% 
   survey_to_long()
   
+```
+
+##Joining data sets: 
+```{r}
+nurses_stress <- survey_long %>% 
+  full_join(survey_tidy) %>% 
+  full_join(hr_data) %>% 
+  full_join(ibi_data) %>% 
+  full_join(Temp_data) %>% 
+  full_join(bvp_data) %>% 
+  full_join(eda_data)
+nurses_stress %>% 
+  view()
+
+
 ```
 

@@ -259,39 +259,36 @@ hr_data %>%
 #| include: false
 #' Summarizing data
 #'
-#' @param data 
+#' @param data
 #'
 #' @returns
 
-summarise_by_datetime <- function (data) {
-  summarised_data <- data %>% 
-  dplyr::mutate(
-    collection_datetime = lubridate::round_date(
-      collection_datetime,
-      unit = "minute"
+summarise_by_datetime <- function(data) {
+  summarised_data <- data %>%
+    dplyr::mutate(
+      collection_datetime = lubridate::round_date(
+        collection_datetime,
+        unit = "minute"
+      )
+    ) %>%
+    dplyr::summarise(
+      dplyr::across(tidyselect::where(is.numeric), base::list(mean = mean, sd = sd, median = median)),
+      .by = c(id, collection_datetime)
     )
-  ) %>%
-  dplyr::summarise(
-    dplyr::across(tidyselect::where(is.numeric), base::list(mean = mean, sd = sd, median = median)),
-    .by = c(id, collection_datetime))
   return(summarised_data)
-    
 }
-
-
-
 ```
 
 ##Pivot longer: 
 
 ```{r}
-survey_data <- here("data-raw/nurses-stress/survey-results.csv.gz") %>% 
+survey_data <- here("data-raw/nurses-stress/survey-results.csv.gz") %>%
   read()
 survey_data
 ```
 
 ```{r}
-survey_data %>% 
+survey_data %>%
   mutate(date = as_date(date))
 ```
 
@@ -309,6 +306,99 @@ survey_tidy <- survey_data |>
 
 
 ```{r}
-survey_data 
+survey_tidy %>%
+  select(id, datetime_id, start_datetime, end_datetime) %>%
+  pivot_longer(c(start_datetime, end_datetime), names_to = NULL, values_to = "collection_datetime")
 ```
+
+#Complete data: 
+
+```{r}
+survey_tidy %>%
+  select(id, datetime_id, start_datetime, end_datetime) %>%
+  pivot_longer(c(start_datetime, end_datetime), names_to = NULL, values_to = "collection_datetime") %>%
+  group_by(pick(-collection_datetime)) %>%
+  complete(collection_datetime = seq(min(collection_datetime), max(collection_datetime), by = 60)) %>%
+  ungroup()
+```
+
+##Function Tidy: 
+
+```{r}
+#| eval: false
+#| include: false
+#' Tidy data
+#'
+#' @param Tidy data
+#'
+#' @returns Clean data
+#'
+#'
+#'
+tidy_survey_dates <- function(data) {
+  tidied <- data %>%
+    dplyr::mutate(
+      date = lubridate::mdy(date),
+      start_datetime = lubridate::as_datetime(paste(date, start_time)),
+      end_datetime = lubridate::as_datetime(paste(date, end_time)),
+      datetime_id = start_datetime,
+      .before = start_time
+    ) |>
+    dplyr::select(-c(date, start_time, end_time, duration))
+  return(tidied)
+}
+```
+
+##Pivot longer function: 
+
+```{r}
+#| eval: false
+#| include: false
+#' Pivot longer
+#'
+#' @param data
+#'
+#' @returns Pivot longer
+
+survey_to_long <- function(data) {
+  longer <- data %>%
+    dplyr::select(id, datetime_id, start_datetime, end_datetime) %>%
+    tidyr::pivot_longer(c(start_datetime, end_datetime), names_to = NULL, values_to = "collection_datetime") %>%
+    dplyr::group_by(pick(-collection_datetime)) %>%
+    tidyr::complete(collection_datetime = seq(min(collection_datetime), max(collection_datetime), by = 60)) %>%
+    dplyr::ungroup()
+  return(longer)
+}
+```
+
+## Join data: 
+
+```{r}
+survey_long %>% 
+  left_join(survey_tidy)
+
+survey_tidy %>% 
+  count(id, datetime_id) %>% 
+  filter(n>1)
+
+survey_long %>% 
+  right_join(survey_tidy)
+
+survey_long %>% 
+full_join(survey_tidy)
+
+
+```
+
+```{r}
+nurses_stress <- survey_long %>% 
+  full_join(survey_tidy) %>% 
+  full_join(hr_data)
+
+nurses_stress %>% 
+  arrange(id, collection_datetime) %>% 
+  view()
+nurses_stress
+```
+
 
